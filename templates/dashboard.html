@@ -3,86 +3,235 @@
 {% block title %}我的文章 - 简洁风个人博客{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">我的文章</h1>
+<div class="max-w-4xl mx-auto">
+    <!-- 页面头部 -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-primary">我的文章</h1>
+            <p class="text-secondary mt-1">管理和查看你发布的所有文章</p>
+        </div>
         <a href="{{ url_for('new_post') }}" 
-           class="bg-apple-blue text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all">
+           class="btn-primary px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 w-fit">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
             新建文章
         </a>
     </div>
     
     {% if posts %}
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标题</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新时间</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for post in posts %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ post.title }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if post.status == 'published' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                    {{ '已发布' if post.status == 'published' else '草稿' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ url_for('edit_post', post_id=post.id) }}" 
-                                   class="text-apple-blue hover:text-blue-700 mr-4">编辑</a>
-                                <button onclick="confirmDelete({{ post.id }}, '{{ post.title|replace('\'', '\\\'') }}')" 
-                                        class="text-red-600 hover:text-red-800">删除</button>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- 文章统计 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="surface-elevated rounded-lg p-4 theme-transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full accent-bg-light flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 accent-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-lg font-semibold text-primary">{{ posts|length }}</div>
+                        <div class="text-sm text-secondary">总文章</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="surface-elevated rounded-lg p-4 theme-transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-lg font-semibold text-primary">{{ posts|selectattr("status", "equalto", "published")|list|length }}</div>
+                        <div class="text-sm text-secondary">已发布</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="surface-elevated rounded-lg p-4 theme-transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-lg font-semibold text-primary">{{ posts|selectattr("status", "equalto", "draft")|list|length }}</div>
+                        <div class="text-sm text-secondary">草稿</div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- 文章列表 -->
+        <div class="surface-elevated rounded-lg overflow-hidden theme-transition">
+            {% for post in posts %}
+                <article class="list-item theme-transition">
+                    <div class="p-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <!-- 文章信息 -->
+                            <div class="flex-grow min-w-0">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <h3 class="text-lg font-semibold text-primary line-clamp-2 flex-grow">
+                                        {{ post.title }}
+                                    </h3>
+                                    
+                                    <!-- 状态标签 -->
+                                    <span class="flex-shrink-0 px-2.5 py-1 text-xs font-medium rounded-full 
+                                        {% if post.status == 'published' %}
+                                            bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300
+                                        {% else %}
+                                            bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300
+                                        {% endif %}">
+                                        {{ '已发布' if post.status == 'published' else '草稿' }}
+                                    </span>
+                                </div>
+                                
+                                <!-- 时间信息 -->
+                                <div class="flex flex-wrap items-center gap-4 text-sm text-tertiary mb-3">
+                                    <div class="flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <span>创建于 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    </div>
+                                    
+                                    {% if post.updated_at != post.created_at %}
+                                        <div class="flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            <span>更新于 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- 摘要（如果有的话） -->
+                                {% if post.excerpt %}
+                                    <p class="text-secondary text-sm line-clamp-2">{{ post.excerpt }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 操作按钮 -->
+                            <div class="flex flex-col sm:flex-row gap-2 lg:flex-col lg:gap-2">
+                                {% if post.status == 'published' %}
+                                    <a href="{{ url_for('post_detail', slug=post.slug) }}" 
+                                       class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium btn-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        查看
+                                    </a>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('edit_post', post_id=post.id) }}" 
+                                   class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium accent-text hover-surface transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                    编辑
+                                </a>
+                                
+                                <button onclick="confirmDelete({{ post.id }}, '{{ post.title|replace('\'', '\\\'') }}')" 
+                                        class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                
+                {% if not loop.last %}
+                    <div class="border-divider"></div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
     {% else %}
-        <div class="text-center py-16 bg-white shadow-sm rounded-lg">
-            <p class="text-xl text-gray-500">您还没有发布任何文章</p>
-            <a href="{{ url_for('new_post') }}" 
-               class="mt-4 inline-block bg-apple-blue text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all">
-                创建第一篇文章
-            </a>
+        <!-- 空状态 -->
+        <div class="surface-elevated rounded-lg text-center py-16 theme-transition">
+            <div class="max-w-sm mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-tertiary mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                
+                <h3 class="text-xl font-semibold text-primary mb-2">您还没有发布任何文章</h3>
+                <p class="text-secondary mb-6">开始您的创作之旅，发布第一篇文章吧！</p>
+                
+                <a href="{{ url_for('new_post') }}" 
+                   class="btn-primary px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    创建第一篇文章
+                </a>
+            </div>
         </div>
     {% endif %}
 </div>
 
 <!-- 删除确认对话框 -->
-<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-        <h3 class="text-xl font-semibold mb-4">确认删除</h3>
-        <p class="mb-6">您确定要删除文章 "<span id="postTitle" class="font-medium"></span>" 吗？此操作无法撤销。</p>
-        <div class="flex justify-end space-x-4">
+<div id="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+    <div class="surface-elevated rounded-lg shadow-xl p-6 max-w-md w-full mx-4 theme-transition">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-primary">确认删除</h3>
+        </div>
+        
+        <p class="text-secondary mb-6">
+            您确定要删除文章 "<span id="postTitle" class="font-medium text-primary"></span>" 吗？此操作无法撤销。
+        </p>
+        
+        <div class="flex justify-end space-x-3">
             <button onclick="closeDeleteModal()" 
-                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-all">
+                    class="px-4 py-2 rounded-md text-sm font-medium text-secondary hover-surface transition-colors">
                 取消
             </button>
-            <form id="deleteForm" method="POST" action="">
+            <form id="deleteForm" method="POST" action="" class="inline">
                 <button type="submit" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-all">
+                        class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
                     删除
                 </button>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .accent-bg-light {
+        background-color: var(--color-accent);
+        opacity: 0.1;
+    }
+    
+    .accent-text {
+        color: var(--color-accent);
+    }
+    
+    .hover-surface:hover {
+        background-color: var(--color-surface);
+    }
+    
+    .border-divider {
+        border-bottom: 1px solid var(--color-border);
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -100,6 +249,13 @@
     // 点击模态框外部关闭
     document.getElementById('deleteModal').addEventListener('click', function(e) {
         if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+    
+    // ESC键关闭模态框
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
             closeDeleteModal();
         }
     });
